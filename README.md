@@ -52,4 +52,8 @@ der,nounits`
 3. The VRAM needs to fit the model, the data of a single batch, and the intermediate computations that occur during the forward and backward passes.
    1. The batch size is the main factor we can control. Larger batches will require more VRAM.
    2. The complexity of the model and the size of the input images also determine VRAM usage. More complex models and larger input images require more VRAM.
-   3. 
+4. Some image sizes are different. We need to resize them to the same size.
+   1. `Input shape: torch.Size([1, 3, 1024, 1020])`
+   2. This causes the division after max pooling to not be evenly divisible causing: `Shape after encoder cnn: torch.Size([1, 512, 64, 63])`
+   3. Which causes more problems after flattening as `Shape after encoder flatten: torch.Size([1, 2064384])` producing error: `RuntimeError: mat1 and mat2 shapes cannot be multiplied (1x2064384 and 524288x2)`.
+5. 

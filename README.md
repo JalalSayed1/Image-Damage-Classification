@@ -15,8 +15,7 @@ COMPSCI5085 Deep Learning M Coursework
    3. Model complexity: Use a simpler model or reduce the width (number of channels) of the U-Net layers if you're constrained by memory.
    4. Gradient accumulation: If you're unable to use a large batch size due to VRAM constraints, you can simulate larger batches by accumulating gradients over several forward/backward passes before updating the model weights.
    5. $VRAM\_usage = model\_size + (input\_size + output\_size + intermediate\_variables\_size) * batch\_size$
-7. To monitor GPU usage: `nvidia-smi -l 5 --query-gpu=utilization.gpu,memory.used --format=csv,nohea
-der,nounits`
+7. To monitor GPU usage: `nvidia-smi -l 1 --query-gpu=utilization.gpu,memory.used --format=csv,noheader,nounits`
 
 ### Colour labels for each damage type
 

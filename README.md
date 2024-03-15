@@ -38,11 +38,6 @@ COMPSCI5085 Deep Learning M Coursework
 | Lightleak     | <span style="color:#f6ff1b">Lemon Yellow</span> |
 | Background    | <span style="color:#5A0007">Dark Red</span>     |
 
-## Ideas
-
-1. Segmentation?
-2. How to save and load the model: [https://chat.openai.com/share/147c1c0d-e8a6-4ec1-8afe-54eaad04de40]
-3. Predict the annotation
 
 ## For report
 
@@ -55,4 +50,75 @@ COMPSCI5085 Deep Learning M Coursework
    1. `Input shape: torch.Size([1, 3, 1024, 1020])`
    2. This causes the division after max pooling to not be evenly divisible causing: `Shape after encoder cnn: torch.Size([1, 512, 64, 63])`
    3. Which causes more problems after flattening as `Shape after encoder flatten: torch.Size([1, 2064384])` producing error: `RuntimeError: mat1 and mat2 shapes cannot be multiplied (1x2064384 and 524288x2)`.
-5. 
+
+---
+
+# Report
+
+
+## Choice of Architecture
+
+The U-Net architecture is a popular choice for semantic segmentation tasks due to its ability to capture fine-grained details, its efficient use of parameters, and its efficiency and slight dataset effectiveness. The U-Net architecture has a distinctive U-shaped structure with a down path to capture context and a symmetric expanding path that enables precise localisation. The down path is composed of a series of convolutional and max-pooling layers that gradually reduce the spatial dimensions of the input. In contrast, the upward path is composed of a series of up-convolutional and concatenation layers that gradually increase the spatial dimensions of the input. The down path captures context by learning to recognise features at different scales.
+In contrast, the upward path enables precise localisation by learning to reconstruct the input from the features learned in the down path. The U-Net architecture is also known for capturing fine-grained details using skip connections to pass high-resolution features from the down path to the expanding path. This allows the U-Net architecture to capture fine-grained information lost in the down path and produce high-resolution predictions that are accurate and visually appealing.
+
+U-Net was chosen over other architectures, such as FCN (Fully Convolutional Networks) and SegNet, because of its superior performance in tasks requiring fine detail and its unique structure that promotes better information flow between the encoding and decoding parts. FCN sometimes struggles with capturing fine details, which may result in less precise boundaries than U-Net. SegNet, on the other hand, uses a different approach to upsample and produce segmentation maps, which can be efficient but does not always provide the level of detail and accuracy that U-Net can achieve, especially in cases where the segmentation task requires high fidelity to small objects or intricate patterns.
+
+Therefore, the U-Net architecture was chosen for this task for these reasons. Its symmetric expanding path, efficient parameter usage, effectiveness with small datasets, and the utilisation of skip connections for preserving high-resolution features throughout the network make it uniquely suited for achieving high accuracy in semantic segmentation tasks that demand precise localisation and fine-grained detail capture.
+
+![U-Net Architecture](https://raw.githubusercontent.com/JalalSayed1/Image-Damage-Classification/ff8499ff3aea505cd5880188e1392e3a19346f82/img/UNet.ppm)
+
+## Methodology
+
+### Data Preprocessing
+
+To ensure consistency in model training and testing, validation images were cropped to match the dimensions of the training set images, optimising the model's performance across uniformly sized inputs. The images were cropped the same way the training images were cropped.
+
+### Loss Function
+
+The model utilises cross-entropy loss, with an ignore index applied to the background class to mitigate its overwhelming presence and encourage focus on more relevant features. This loss function is a popular choice for semantic segmentation tasks as it is effective at penalising incorrect predictions and encouraging the model to learn the features of the different classes.
+
+### Model Evaluation
+
+The primary metric used to evaluate the model's performance was the loss value, specifically the cross-entropy loss over validation data. While loss values offer direct insight into the model's learning process, future work may benefit from incorporating additional metrics such as F1-score for a more accurate assessment of segmentation accuracy.
+
+### Training
+
+The training process was optimised for computational efficiency by employing PyTorch's Automatic Mixed Precision (AMP) and gradient checkpointing. These techniques, alongside a carefully chosen batch size of 6, allowed the model to train effectively within the constraints of an 8GB GPU memory limit. The SGD optimiser, with a learning rate of approximately 0.04 and momentum of about 0.8 across 150 epochs, was calibrated to balance the model's learning speed and stability.
+
+![Training Loss](https://raw.githubusercontent.com/JalalSayed1/Image-Damage-Classification/ff8499ff3aea505cd5880188e1392e3a19346f82/img/training_results/losses_lr%3D0.04491_momentum%3D0.83.png)
+
+### Architecture Modifications
+
+The original U-Net architecture was modified by simplifying double convolutional layers to single layers to reduce model complexity for more efficient training. Additionally, the implementation of "use_checkpointing" in the U-Net architecture, combined with PyTorch's AMP, facilitated a significant reduction in memory usage. This strategic adjustment ensured that the training process was memory-efficient and allowed for an increase in batch size from 4 to 6, improving the training efficiency.
+
+## Results and Observations
+
+Visual comparisons between the original images, ground truth annotations, and model predictions underscore the challenges the model faces in accurately segmenting all images and misclassifying non-background elements as background.
+
+![Example final Predictions](https://raw.githubusercontent.com/JalalSayed1/Image-Damage-Classification/master/img/predictions/final_predictions.png)
+
+### Discussion and Future Work
+
+The challenges encountered during this project reveal significant insights into the limitations and potential areas for improvement in the semantic segmentation model. Key observations and strategic recommendations for future work are outlined below:
+
+- Predominance of Background Classifications: The model frequently misclassified diverse image regions as background. This issue underscores the model's struggle with differentiating foreground and background classes, potentially due to several underlying factors discussed below.
+
+- Class imbalance: The dataset is highly imbalanced, with the background class being the most common class. This causes the model to be biased towards the background class and struggle to learn the features of the other classes. Even by ignoring the background class in the loss function, the model still struggled to learn the features of the different classes.
+
+- Small dataset: The dataset is relatively small. This can make it difficult for the model to learn the features of the different classes and can lead to overfitting. A pre-trained model may have been more effective for this small dataset.
+
+- Simplified Model Complexity: Though beneficial for training efficiency, the decision to simplify the U-Net architecture may have compromised the model's capacity to capture complex features. Reintroducing complexity in a controlled manner with additional layers and deeper architecture could enhance feature extraction and segmentation accuracy.
+
+- Data augmentation: The dataset was not augmented before training. Data augmentation can be an effective way to increase the diversity of the dataset and help the model learn the features of the different classes more effectively.
+
+- Different Loss Function and Optimiser: Using a different loss function, such as Dice loss or focal loss, may have led to better results. I used cross-entropy loss as it is a popular choice for semantic segmentation tasks, but other loss functions may have been more effective for this task (e.g. focal loss for class imbalance or dice loss for small objects). Similarly, using a different optimiser like Adam may have led to better results. I used SGD as it is a popular choice for semantic segmentation tasks, but other optimisations may have been more effective for this task.
+
+- Different batch size: Different sizes may have led to better results. I used a batch size of 6 as my GPU memory was limited.
+
+- Different architecture: Using a different architecture, such as FCN or SegNet, may have led to better results. UNet is an excellent choice for semantic segmentation tasks, but other architectures may have been more effective for this task.
+
+## Conclusion
+
+In conclusion, the U-Net architecture was used to train a model to perform semantic segmentation on a dataset of damaged images. The model was trained using the SGD optimiser with a learning rate of ~0.04 and momentum of ~0.8 for 150 epochs. The model struggled to learn the features of the different classes and could not predict correct annotations for all the images. The reasons for this may include class imbalance, small dataset, model complexity, hyperparameters, data augmentation, loss function, optimiser, batch size, and architecture. Future work could address these issues and experiment with different approaches to improve the model's performance.
+
+---
